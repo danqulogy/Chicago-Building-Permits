@@ -21,5 +21,11 @@ While the numbers still get very large on the y-axis, the graph below represents
 
 ### Community Areas
 
-Just looking at the Community Areas dataset, it looks like the two area number columns (AREA_NUMBE and AREA_NUM_1) are the same. When finding the correlation between the two columns, the value is 1, indicating / confirming that both of the columns are exactly the same.
+Just looking at the Community Areas dataset, it looks like the two area number columns (AREA_NUMBE and AREA_NUM_1) are the same. To verify, we would have to find the correlation coefficient.
+
+```{r}
+cor.test(commarea$AREA_NUMBE, commarea$AREA_NUM_1)
+```
+
+By running the line of code above, we find that the correlation coefficient is equal to 1, which confirms that AREA_NUMBE and AREA_NUM_1 are the same.
 
