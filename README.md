@@ -17,7 +17,7 @@ The data contains missing values for community area numbers, contact information
 
 While the numbers still get very large on the y-axis, the graph below represents the permits comparing the processing time to the total fee, except for one outlier, where the total fee seemed extremely high, even for permits with lower processing speeds.
 
-[PROCESSING_TIME vs TOTAL_FEE](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/CommunityAreaProcessingTime.png)
+![PROCESSING_TIME vs TOTAL_FEE](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/CommunityAreaProcessingTime.png)
 
 ### Community Areas
 
