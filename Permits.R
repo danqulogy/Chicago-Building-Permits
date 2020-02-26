@@ -54,11 +54,11 @@ dev.off()
 cor.test(permits$COMMUNITY_AREA, permits$TOTAL_FEE)
 
 # COMMUNITY_AREA vs TOTAL_FEE (Table)
-permits %>%
+View(permits %>%
     group_by(COMMUNITY_AREA) %>%
     summarize(mean = mean(TOTAL_FEE)) %>%
     as.data.frame() %>%
-    tidy()
+    tidy())
 
 # WARD vs TOTAL_FEE
 png("~/Documents/WardTotalFee.png")
@@ -82,17 +82,13 @@ dev.off()
 
 cor.test(permits$COMMUNITY_AREA, permits$PROCESSING_TIME)
 
-png("~/Documents/NewPermitsPerYear.png")
-permits$YEAR = year(mdy(permits$APPLICATION_START_DATE))
 permits %>%
-    filter((YEAR < 2020) & (YEAR > 2005)) %>%
-    group_by(YEAR) %>%
-    summarize(number = n()) %>%
-    ggplot(aes(YEAR, number)) + geom_point() +
-    labs(title = "The Number of New Permits Every Year (2006 through 2019)",
-         x = "Year",
-         y = "The Number of New Permits")
-dev.off()
+    ggplot(aes(COMMUNITY_AREA, SUBTOTAL_PAID)) + geom_point() +
+    labs(title = "Community Area vs Subtotal Paid",
+         x = "Community Area",
+         y = "Subtotal Paid")
+
+## CommArea DATASET
 
 cor.test(commarea$AREA_NUMBE, commarea$AREA_NUM_1)
 # r = 1 → AREA_NUMBE and AREA_NUM_1 are the same
@@ -103,7 +99,7 @@ communities <- commarea %>% select(COMMUNITY_AREA = AREA_NUMBE, COMMUNITY)
 merged <- left_join(permits, communities, by = "COMMUNITY_AREA")
 View(merged)
 
-# finding the new constructions permits per year
+# finding the new constructions permits per year and plotting it
 merged$NEW_CONSTRUCTION <-
   ifelse(merged$PERMIT_TYPE == "PERMIT - NEW CONSTRUCTION", 1, 0)
 
@@ -111,6 +107,17 @@ merged %>%
   group_by(COMMUNITY_AREA) %>%
   summarize(NUMBER = sum(NEW_CONSTRUCTION)) %>%
   arrange(desc(NUMBER))
+
+png("~/Documents/NewPermitsPerYear.png")
+merged$YEAR = year(mdy(merged$APPLICATION_START_DATE))
+merged %>%
+  filter(YEAR < 2020) %>%
+  group_by(YEAR) %>%
+  ggplot(aes(YEAR)) + geom_bar() +
+  labs(title = "The Number of New Permits Every Year (2006 through 2019)",
+       x = "Year",
+       y = "The Number of New Permits")
+dev.off()
 
 # finding the Renovation / Alteration & Wrecking / Demolition permits per year
 merged$RENOVATION_DEMOLITION <- 
