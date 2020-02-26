@@ -54,11 +54,11 @@ dev.off()
 cor.test(permits$COMMUNITY_AREA, permits$TOTAL_FEE)
 
 # COMMUNITY_AREA vs TOTAL_FEE (Table)
-View(permits %>%
+commareatotalfee <- permits %>%
     group_by(COMMUNITY_AREA) %>%
     summarize(mean = mean(TOTAL_FEE)) %>%
     as.data.frame() %>%
-    tidy())
+    tidy()
 
 # WARD vs TOTAL_FEE
 png("~/Documents/WardTotalFee.png")
@@ -75,18 +75,32 @@ cor.test(permits$WARD, permits$TOTAL_FEE)
 png("~/Documents/CommunityAreaProcessingTime.png")
 permits %>%
     ggplot(aes(COMMUNITY_AREA, PROCESSING_TIME)) + geom_point() +
-    labs(title = "Community Area",
+    labs(title = "Community Area vs Processing Time",
          x = "Community Area",
          y = "Processing Time (Days)")
 dev.off()
 
-cor.test(permits$COMMUNITY_AREA, permits$PROCESSING_TIME)
-
+# SUBTOTAL_PAID vs PROCESSING_TIME
+png("~/Documents/SubtotalPaidProcessingTime.png")
 permits %>%
-    ggplot(aes(COMMUNITY_AREA, SUBTOTAL_PAID)) + geom_point() +
-    labs(title = "Community Area vs Subtotal Paid",
-         x = "Community Area",
-         y = "Subtotal Paid")
+    ggplot(aes(SUBTOTAL_PAID, PROCESSING_TIME)) + geom_point() +
+    labs(title = "Subtotal (Paid) vs Processing Time",
+         x = "Subtotal (Paid)",
+         y = "Processing Time (Days)")
+dev.off()
+
+cor.test(permits$SUBTOTAL_PAID, permits$PROCESSING_TIME)
+
+# CENSUS_TRACT vs PROCESSING_TIME
+png("~/Documents/CensusTractProcessingTime.png")
+permits %>%
+    ggplot(aes(CENSUS_TRACT, PROCESSING_TIME)) + geom_point() +
+    labs(title = "Census Tract vs Processing Time",
+         x = "Census Tract",
+         y = "Processing Time (Days)")
+dev.off()
+
+
 
 ## CommArea DATASET
 
@@ -97,26 +111,26 @@ cor.test(commarea$AREA_NUMBE, commarea$AREA_NUM_1)
 # permits dataset, and then merging
 communities <- commarea %>% select(COMMUNITY_AREA = AREA_NUMBE, COMMUNITY)
 merged <- left_join(permits, communities, by = "COMMUNITY_AREA")
-View(merged)
 
-# finding the new constructions permits per year and plotting it
+# finding the new constructions permits per year
 merged$NEW_CONSTRUCTION <-
-  ifelse(merged$PERMIT_TYPE == "PERMIT - NEW CONSTRUCTION", 1, 0)
+    ifelse(merged$PERMIT_TYPE == "PERMIT - NEW CONSTRUCTION", 1, 0)
 
-merged %>%
-  group_by(COMMUNITY_AREA) %>%
-  summarize(NUMBER = sum(NEW_CONSTRUCTION)) %>%
-  arrange(desc(NUMBER))
+new_construction <- merged %>%
+    group_by(COMMUNITY) %>%
+    summarize(NUMBER = sum(NEW_CONSTRUCTION)) %>%
+    arrange(desc(NUMBER)) %>%
+    filter(!is.na(COMMUNITY))
 
 png("~/Documents/NewPermitsPerYear.png")
 merged$YEAR = year(mdy(merged$APPLICATION_START_DATE))
 merged %>%
-  filter(YEAR < 2020) %>%
-  group_by(YEAR) %>%
-  ggplot(aes(YEAR)) + geom_bar() +
-  labs(title = "The Number of New Permits Every Year (2006 through 2019)",
-       x = "Year",
-       y = "The Number of New Permits")
+    filter((YEAR > 2005) & (YEAR < 2020)) %>%
+    group_by(YEAR) %>%
+    ggplot(aes(YEAR)) + geom_bar() +
+    labs(title = "The Number of New Permits Every Year (2006 through 2019)",
+         x = "Year",
+         y = "The Number of New Permits")
 dev.off()
 
 # finding the Renovation / Alteration & Wrecking / Demolition permits per year
@@ -124,12 +138,9 @@ merged$RENOVATION_DEMOLITION <-
   ifelse(merged$PERMIT_TYPE == "PERMIT - RENOVATION/ALTERATION" |
            merged$PERMIT_TYPE == "PERMIT - WRECKING/DEMOLITION", 1, 0)
 
-png("~/Documents/RenovationDemolitionPermits.png")
-merged %>%
+renovation_demolition <- merged %>%
     group_by(COMMUNITY) %>%
     summarize(number = sum(RENOVATION_DEMOLITION)) %>%
     arrange(desc(number)) %>%
     as.data.frame() %>%
-    filter(!is.na(COMMUNITY)) %>%
-    grid.table()
-dev.off()
+    filter(!is.na(COMMUNITY))

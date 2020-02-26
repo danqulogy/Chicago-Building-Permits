@@ -18,19 +18,43 @@ While the numbers still get very large on the y-axis, the graph below represents
 
 ![PROCESSING_TIME vs TOTAL_FEE](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/ProcessingTimeTotalFee.png)
 
-The outlier was a New Construction permit that, according to the data, had $2,814,056 in total fees (with a $2,750,554 subtotal waived).
+The outlier was a New Construction permit that, according to the data, had $2,814,056 in total fees (with $2,750,554 of the subtotal waived).
+
+#### SUBTOTAL_PAID vs PROCESSING_TIME
+
+The amount of the subtotal paid seemed to have an interestingly higher correlation with the processing time thus far.
+
+![SUBTOTAL_PAID vs PROCESSING_TIME](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/SubtotalPaidProcessingTime.png)
+
+The points on this graph are more correlated than the graphs of other numerical values compared to processing time. The correlation coefficient is about 0.0232.
 
 #### COMMUNITY_AREA vs TOTAL_FEE
 
-When comparing the different community areas to the total fees of each permit, the graph seems to show that some community areas tend to have higher total fees than others, but as shown in the graph below, it is still pretty scattered, there is not much correlation between the community area and the total fee.
+When comparing the different community areas to the total fees of each permit, the graph seems to show that some community areas tend to have higher total fees than others, but as shown in the graph below, it is still pretty scattered, there is not much of a relationship between community areas and total fees.
 
 ![COMMUNITY_AREA vs TOTAL_FEE](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/CommunityAreaTotalFee.png)
 
+Because the community area is assigned numbers that are not exactly measureable, it does not make sense to find the correlation coefficient to see how well correlated the community areas and the total fees are.
+
+#### CENSUS_TRACT vs PROCESSING_TIME
+
+When comparing the census tract of the primary location of the permit, we can see that certain census tracts seem to be more condensed than others.
+
+![CENSUS_TRACT vs PROCESSING_TIME](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/CensusTractProcessingTime.png)
+
+Because the census tract is also assigned and not a measureable quantity, it does not make sense to find the correlation coefficient to see how well correlated the census tracts and the processing times are.
+
 #### COMMUNITY_AREA vs PROCESSING_TIME
 
-When comparing the different community areas to the processing time, it seems like different communities have different ranges in processing times, but there does not appear to be a very strong correlation between which neighborhoods tend to have lower (or higher) processing times than others.
+When comparing the different community areas to the processing time, it seems like different communities have different ranges in processing times, but the graph appear to be a very strong correlation between which neighborhoods tend to have lower (or higher) processing times than others.
 
 ![COMMUNITY_AREA vs PROCESSING_TIME](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/CommunityAreaProcessingTime.png)
+
+Just like before, because the community area is assigned numbers that are not exactly measureable, it does not make sense find the correlation between the community area and the processing time. However, we can see that certain communities do not seem to necessarily have less processing times than others.
+
+#### Processing Times Correlation
+
+Based on the graphs above and the correlation coefficients found, the subtotal paid and the processing time correlation are the most correlated.
 
 ### Community Areas
 
@@ -40,8 +64,58 @@ Just looking at the Community Areas dataset, it looks like the two area number c
 cor.test(commarea$AREA_NUMBE, commarea$AREA_NUM_1)
 ```
 
-By running the line of code above, we find that the correlation coefficient is equal to 1, which confirms that AREA_NUMBE and AREA_NUM_1 are the same.
+By running the line of code above, where `commarea` is the name of the data frame storing the data from the Community Areas dataset, we find that the correlation coefficient is equal to 1, which confirms that AREA_NUMBE and AREA_NUM_1 are the same.
 
 #### New Construction Permits per Year
 
-![New Construction Permits per Year](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/NewPermitsPerYear.png)
+Combining relevant columns of data from the Community Areas dataset with the Building Permits dataset becomes useful here to attain more insight to communities and what types of permits they have.
+
+In order to map the community names to all of its associated permits, the following code correctly identifies the community name for each permit's community area:
+
+```{r}
+communities <- commarea %>% select(COMMUNITY_AREA = AREA_NUMBE, COMMUNITY)
+merged <- left_join(permits, communities, by = "COMMUNITY_AREA")
+```
+
+Below, every reference to merged is referring to the data frame created using this code snippet.
+
+![New Permits per Year](https://github.com/choudharynisha/Building-Permits-in-Chicago/blob/master/Graphs/NewPermitsPerYear.png)
+
+As shown in the graph above, the number of new permits per year overall in Chicago has been steadily increasing since 2008, with a large jump from 2007 to 2008.
+
+More specifically, by running the code below, we can see the breakdown by neighborhood / community for New Construction permits over the 14 years.
+
+```{r}
+merged %>%
+    group_by(COMMUNITY) %>%
+    summarize(NUMBER = sum(NEW_CONSTRUCTION)) %>%
+    arrange(desc(NUMBER)) %>%
+    filter(!is.na(COMMUNITY))
+```
+
+By looking at the table created, we can see that the top 5 neighborhoods with the most New Construction permits are as follows:
+
+1. West Town (1,510)
+2. Lake View (1,112)
+3. Loop (1,075)
+4. Near North Side (1,075)
+5. Lincoln Park (1,021)
+
+We can also look at the breakdown of Renovation/Alteration and Wrecking/Demolition permits by neighborhood / community over the 14 years by running the following code:
+
+```{r}
+merged %>%
+    group_by(COMMUNITY) %>%
+    summarize(number = sum(RENOVATION_DEMOLITION)) %>%
+    arrange(desc(number)) %>%
+    as.data.frame() %>%
+    filter(!is.na(COMMUNITY))
+```
+
+By looking at the table created, we can see that the top 5 neighborhoods with the most Renovation/Alteration and Wrecking/Demolition permits are as follows:
+
+1. Loop (10,613)
+2. Near North Side (8,655)
+3. West Town (6,003)
+4. Near West Side (5,265)
+5. Lake View (5,055)
